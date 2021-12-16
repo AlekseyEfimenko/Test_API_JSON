@@ -1,126 +1,98 @@
 package com.steps;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertNotEquals;
+import static com.utils.MyAssert.myAssertTrue;
+import static com.utils.MyAssert.myAssertEquals;
+import static com.utils.MyAssert.myAssertNotEquals;
+import static com.utils.MyAssert.myAssertNotNull;
 import com.pojo.posts.Post;
 import com.pojo.users.Address;
 import com.pojo.users.Company;
 import com.pojo.users.Geo;
 import com.pojo.users.User;
-import com.utils.APIUtils;
+import com.utils.ApiUtils;
 import com.utils.Configurations;
-import io.restassured.http.ContentType;
 import org.apache.log4j.Logger;
-import org.testng.Assert;
 import java.util.List;
 
 public class TestSteps {
     private static final Logger LOGGER = Logger.getLogger(TestSteps.class);
-    private final User user = new User();
-    private Post post;
-    private Post requestedPost;
-    private User user5;
-    private List<User> users;
 
     public void getPosts(String target) {
         LOGGER.info("Get request from " + Configurations.getInstance().getRequestURL() + target);
-        APIUtils.getInstance().getRequest(target);
+        ApiUtils.getInstance().getRequest(target);
     }
 
     public void assertStatusCode(int statusCode) {
-        int status = 0;
-        try {
-            status = APIUtils.getInstance().getStatusCode();
-            assertEquals(status, statusCode);
-        } catch (AssertionError as) {
-            LOGGER.error("Status code is " + status + ", expected status code is " + statusCode);
-            throw new AssertionError();
-        }
+        int status = ApiUtils.getInstance().getStatusCode();
+        myAssertEquals(status, statusCode);
     }
 
-    public void assertListFormat(ContentType format) {
-        try {
-            APIUtils.getInstance().checkContentType(format);
-        } catch (AssertionError as) {
-            LOGGER.error("Content type is not " + format.name());
-            throw new AssertionError();
-        }
+    public void assertListFormat(String format) {
+        myAssertEquals(ApiUtils.getInstance().getContentType(), format);
     }
 
     public <T extends Comparable<T>> void assertListSortedBy(String target) {
         LOGGER.info("Get list of " + target);
-        List<T> list = APIUtils.getInstance().getList(target);
-        try {
-            LOGGER.info("Check, if list is sorted by " + target);
-            assertTrue(Configurations.getInstance().isSorted(list));
-        } catch (AssertionError as) {
-            LOGGER.error("List is not sorted");
-            throw new AssertionError();
-        }
+        List<T> list = ApiUtils.getInstance().getList(target);
+        LOGGER.info("Check, if list is sorted by " + target);
+        myAssertTrue(Configurations.getInstance().isSorted(list));
     }
 
     public <T> void assertValueEquals(T key, String value) {
         LOGGER.info("Check if " + key + " is equals to " + value);
-        try {
-            assertEquals(APIUtils.getInstance().getValue(key).toString(), value);
-        } catch (AssertionError as) {
-            LOGGER.error("The value by key " + key + " is not " + value);
-            throw new AssertionError();
-        }
+        myAssertEquals(ApiUtils.getInstance().getValue(key).toString(), value);
     }
 
     public <T> void assertValueIsNotEmpty(T key, String value) {
         LOGGER.info("Check if " + key + " is not empty");
-        try {
-            assertNotEquals(APIUtils.getInstance().getValue(key).toString(), value);
-        } catch (AssertionError as) {
-            LOGGER.error("The value by key " + key + " is not empty");
-            throw new AssertionError();
-        }
+        myAssertNotEquals(ApiUtils.getInstance().getValue(key).toString(), value);
     }
 
     public void assertBodyIsEmpty(String value) {
         LOGGER.info("Check if body request is empty");
-        try {
-            assertEquals(APIUtils.getInstance().getBody(), value);
-        } catch (AssertionError as) {
-            LOGGER.error("Body request is not empty");
-            throw new AssertionError();
-        }
+        myAssertEquals(ApiUtils.getInstance().getBody(), value);
     }
 
-    public void postPosts(String target) {
-        post = new Post(Configurations.getInstance().getRandomString(), Configurations.getInstance().getRandomString(), "1");
+    public void postPosts(String target, Post post) {
         LOGGER.info("Post request to " + Configurations.getInstance().getRequestURL() + target);
-        APIUtils.getInstance().postRequest(target, post);
+        ApiUtils.getInstance().postRequest(target, post);
     }
 
-    public void assertValueIsValid(String key) {
+    public void assertValueIsValid(String key, Post post) {
         LOGGER.info("Check if value by key " + key + " is valid");
-        requestedPost = APIUtils.getInstance().convertPostToPojo();
+        Post requestedPost = getPostFromRequest();
         switch (key) {
-            case "title" -> assertEquals(requestedPost.getTitle(), post.getTitle());
-            case "body" -> assertEquals(requestedPost.getBody(), post.getBody());
-            case "userId" -> assertEquals(requestedPost.getUserId(), post.getUserId());
+            case "title" -> myAssertEquals(requestedPost.getTitle(), post.getTitle());
+            case "body" -> myAssertEquals(requestedPost.getBody(), post.getBody());
+            case "userId" -> myAssertEquals(requestedPost.getUserId(), post.getUserId());
             default -> LOGGER.error("Wrong key is entered");
         }
     }
 
     public void assertValueIsPresent(String key) {
         LOGGER.info("Check if key " + key + " is present in request");
-        Assert.assertNotNull(requestedPost.getId());
+        Post requestedPost = getPostFromRequest();
+        myAssertNotNull(requestedPost.getId());
     }
 
-    public void setUser() {
-        user5 = APIUtils.getInstance().convertUserToPojo();
+    private Post getPostFromRequest() {
+        return ApiUtils.getInstance().convertRequestToPojo(Post.class);
     }
 
-    public void setUsers() {
-        users = APIUtils.getInstance().getListOfUsers();
+    public void assertUsersEqual(User user) {
+        List<User> users = getUsers();
+        setUpUser(user);
+        LOGGER.info("Check if user fields with id \"5\" have correct information");
+        myAssertEquals(users.get(4), user);
     }
 
-    public void setUpUser() {
+    public void assertUser5IsCorrect(User user) {
+        User user5 = getUser();
+        LOGGER.info("Check if user 5 fields have correct information");
+        myAssertEquals(user, user5);
+    }
+
+    private void setUpUser(User user) {
         Geo geo = new Geo();
         Address address = new Address();
         Company company = new Company();
@@ -148,33 +120,12 @@ public class TestSteps {
         user.setCompany(company);
     }
 
-    public void assertUsersEqual() {
-        setUsers();
-        setUpUser();
-        LOGGER.info("Check if user fields with id \"5\" have correct information");
-
-        assertEquals(user.getId(), users.get(4).getId());
-        assertEquals(user.getName(), users.get(4).getName());
-        assertEquals(user.getUsername(), users.get(4).getUsername());
-        assertEquals(user.getEmail(), users.get(4).getEmail());
-        assertEquals(user.getAddress().getStreet(), users.get(4).getAddress().getStreet());
-        assertEquals(user.getAddress().getSuite(), users.get(4).getAddress().getSuite());
-        assertEquals(user.getAddress().getCity(), users.get(4).getAddress().getCity());
-        assertEquals(user.getAddress().getZipcode(), users.get(4).getAddress().getZipcode());
-        assertEquals(user.getAddress().getGeo().getLat(), users.get(4).getAddress().getGeo().getLat());
-        assertEquals(user.getAddress().getGeo().getLng(), users.get(4).getAddress().getGeo().getLng());
-        assertEquals(user.getPhone(), users.get(4).getPhone());
-        assertEquals(user.getWebsite(), users.get(4).getWebsite());
-        assertEquals(user.getCompany().getName(), users.get(4).getCompany().getName());
-        assertEquals(user.getCompany().getCatchPhrase(), users.get(4).getCompany().getCatchPhrase());
-        assertEquals(user.getCompany().getBs(), users.get(4).getCompany().getBs());
+    private User getUser() {
+        return ApiUtils.getInstance().convertRequestToPojo(User.class);
     }
 
-    public void assertUser5IsCorrect() {
-        setUser();
-        LOGGER.info("Check if user 5 fields have correct information");
-
-        assertEquals(user.toString(), user5.toString());
+    private List<User> getUsers() {
+        return ApiUtils.getInstance().getListOfUsers(User.class);
     }
 }
 

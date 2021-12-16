@@ -1,10 +1,13 @@
 package com.steps.tests;
 
+import com.pojo.posts.Post;
+import com.pojo.users.User;
 import com.steps.TestSteps;
+import com.utils.Configurations;
 import io.restassured.http.ContentType;
 import org.testng.annotations.Test;
 
-public class TestREST {
+public class TestRest {
     private static final String GET_POSTS = "posts";
     private static final String GET_POST_99 = "posts/99";
     private static final String GET_POST_150 = "posts/150";
@@ -13,7 +16,7 @@ public class TestREST {
     private static final int SUCCESS_STATUS_CODE = 200;
     private static final int NOT_FOUND_STATUS_CODE = 404;
     private static final int CREATED_STATUS_CODE = 201;
-    private static final ContentType CONTENT_TYPE = ContentType.JSON;
+    private static final String CONTENT_TYPE = ContentType.JSON.toString();
     private static final String ID = "id";
     private static final String USER_ID = "userId";
     private static final String TITLE = "title";
@@ -24,7 +27,8 @@ public class TestREST {
     private static final String POST_99_BODY = "";
     private static final String EMPTY_BODY = "{}";
     private final TestSteps steps = new TestSteps();
-
+    private final User user = new User();
+    private final Post post = new Post(Configurations.getInstance().getRandomString(), Configurations.getInstance().getRandomString(), "1");
 
     @Test
     public void testGetAndPost() {
@@ -44,21 +48,21 @@ public class TestREST {
         steps.assertStatusCode(NOT_FOUND_STATUS_CODE);
         steps.assertBodyIsEmpty(EMPTY_BODY);
 
-        steps.postPosts(GET_POSTS);
+        steps.postPosts(GET_POSTS, post);
         steps.assertStatusCode(CREATED_STATUS_CODE);
-        steps.assertValueIsValid(TITLE);
-        steps.assertValueIsValid(BODY);
-        steps.assertValueIsValid(USER_ID);
+        steps.assertValueIsValid(TITLE, post);
+        steps.assertValueIsValid(BODY, post);
+        steps.assertValueIsValid(USER_ID, post);
         steps.assertValueIsPresent(ID);
 
         steps.getPosts(GET_USERS);
         steps.assertStatusCode(SUCCESS_STATUS_CODE);
         steps.assertListFormat(CONTENT_TYPE);
-        steps.assertUsersEqual();
+        steps.assertUsersEqual(user);
 
         steps.getPosts(GET_USERS_5);
         steps.assertStatusCode(SUCCESS_STATUS_CODE);
-        steps.assertUser5IsCorrect();
+        steps.assertUser5IsCorrect(user);
     }
 }
 

@@ -1,7 +1,5 @@
 package com.utils;
 
-import com.pojo.posts.Post;
-import com.pojo.users.User;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -11,17 +9,17 @@ import java.util.List;
 /**
  * Class, that provides the opportunity to make requests to API
  */
-public class APIUtils {
-    private static final Logger LOGGER = Logger.getLogger(APIUtils.class);
+public class ApiUtils {
+    private static final Logger LOGGER = Logger.getLogger(ApiUtils.class);
     private static final String BASE_PATH = Configurations.getInstance().getRequestURL();
-    private static APIUtils instance;
+    private static ApiUtils instance;
     private Response response;
 
-    private APIUtils() {}
+    private ApiUtils() {}
 
-    public static APIUtils getInstance() {
+    public static ApiUtils getInstance() {
         if (instance == null) {
-            instance = new APIUtils();
+            instance = new ApiUtils();
         }
         return instance;
     }
@@ -49,12 +47,12 @@ public class APIUtils {
     }
 
     /**
-     * Checking if ContentType equals to given
-     * @param format ContentType to check with
+     * Get the Content type of the request
+     * @return String representation of Content type
      */
-    public void checkContentType(ContentType format) {
+    public String getContentType() {
         LOGGER.info("Get content type of request");
-        response.then().assertThat().contentType(format);
+        return response.contentType().split(";")[0];
     }
 
     /**
@@ -88,36 +86,27 @@ public class APIUtils {
     /**
      * Send data to the API server to create new resource
      * @param target URL to post request
-     * @param post The Post object to be sent
+     * @param obj T object to be sent
      */
-    public void postRequest(String target, Post post) {
-        response = RestAssured.given().header("Content-Type", "application/json").body(post).post(BASE_PATH + target);
+    public <T> void postRequest(String target, T obj) {
+        response = RestAssured.given().header("Content-Type", ContentType.JSON).body(obj).post(BASE_PATH + target);
     }
 
     /**
-     * Converting request from API server to Post object
-     * @return Post object
+     * Converting request from API server to T class object
+     * @return T object
      */
-    public Post convertPostToPojo() {
-        return response.as(Post.class);
+    public <T> T convertRequestToPojo(Class<T> cl) {
+        return response.as(cl);
     }
 
     /**
-     * Converting request from API server to list of User objects
-     * @return List of User objects
+     * Converting request from API server to list of T objects
+     * @return List of T objects
      */
-    public List<User> getListOfUsers() {
+    public <T> List<T> getListOfUsers(Class<T> cl) {
         LOGGER.info("Get list of users");
-        return response.jsonPath().getList("$", User.class);
-    }
-
-    /**
-     * Converting request from API server to User object
-     * @return User object
-     */
-    public User convertUserToPojo() {
-        return response.as(User.class);
+        return response.jsonPath().getList("$", cl);
     }
 }
-
 

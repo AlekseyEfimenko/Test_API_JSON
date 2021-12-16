@@ -3,7 +3,7 @@
 <suite name="All Test Suite">
     <test verbose="2" name="a2.efimenko_T3">
         <classes>
-            <class name="com.steps.tests.TestREST">
+            <class name="com.steps.tests.TestRest">
                 <methods>
                     <include name="testGetAndPost"/>
                 </methods>
