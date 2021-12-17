@@ -1,8 +1,13 @@
 package com.utils;
 
 import io.restassured.RestAssured;
+import io.restassured.filter.Filter;
+import io.restassured.filter.FilterContext;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import io.restassured.specification.FilterableRequestSpecification;
+import io.restassured.specification.FilterableResponseSpecification;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import java.util.List;
 
@@ -12,6 +17,7 @@ import java.util.List;
 public class ApiUtils {
     private static final Logger LOGGER = Logger.getLogger(ApiUtils.class);
     private static final String BASE_PATH = Configurations.getInstance().getRequestURL();
+    private static final String CONTENT_TYPE = "Content-Type";
     private static ApiUtils instance;
     private Response response;
 
@@ -20,6 +26,7 @@ public class ApiUtils {
     public static ApiUtils getInstance() {
         if (instance == null) {
             instance = new ApiUtils();
+            RestAssured.filters(new MyRequestFilter());
         }
         return instance;
     }
@@ -34,7 +41,6 @@ public class ApiUtils {
      * @return Status code
      */
     public int getStatusCode () {
-        LOGGER.info("Get status code of request");
         return response.statusCode();
     }
 
@@ -43,7 +49,8 @@ public class ApiUtils {
      * @param target URL for getting request
      */
     public void getRequest(String target) {
-        response = RestAssured.when().get(BASE_PATH + target);
+        response = RestAssured.given().when()
+                .get(BASE_PATH + target);
     }
 
     /**
@@ -89,7 +96,7 @@ public class ApiUtils {
      * @param obj T object to be sent
      */
     public <T> void postRequest(String target, T obj) {
-        response = RestAssured.given().header("Content-Type", ContentType.JSON).body(obj).post(BASE_PATH + target);
+        response = RestAssured.given().header(CONTENT_TYPE, ContentType.JSON).body(obj).post(BASE_PATH + target);
     }
 
     /**
@@ -107,6 +114,26 @@ public class ApiUtils {
     public <T> List<T> getListOfUsers(Class<T> cl) {
         LOGGER.info("Get list of users");
         return response.jsonPath().getList("$", cl);
+    }
+
+    static class MyRequestFilter implements Filter {
+
+        private static final Logger LOGGER = Logger.getLogger(MyRequestFilter.class.getName());
+
+        @Override
+        public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext ctx) {
+            Response response = ctx.next(requestSpec, responseSpec);
+            if (requestSpec.getMethod().equals("GET")) {
+                LOGGER.info("Getting request from " + requestSpec.getURI());
+            } else if (requestSpec.getMethod().equals("POST")) {
+                LOGGER.info("Post request to " + requestSpec.getURI());
+            }
+            LOGGER.info("Status code of request is: " + response.statusCode());
+            if (response.statusCode() >= 400) {
+                LOGGER.log(Level.ERROR, requestSpec.getURI() + " => " + response.getStatusLine());
+            }
+            return response;
+        }
     }
 }
 

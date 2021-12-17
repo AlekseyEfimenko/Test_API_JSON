@@ -1,13 +1,13 @@
 package com.pojo.posts;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
+@Data
 public class Post {
-    @Getter @Setter private String title;
-    @Getter @Setter private String body;
-    @Getter @Setter private String userId;
-    @Getter @Setter private Integer id;
+    private String title;
+    private String body;
+    private String userId;
+    private Integer id;
 
     public Post(String title, String body, String userId) {
         this.title = title;

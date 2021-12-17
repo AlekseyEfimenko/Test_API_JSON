@@ -1,18 +1,18 @@
 package com.pojo.users;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import java.util.Objects;
 
+@Data
 public class User {
-    @Getter @Setter private String id;
-    @Getter @Setter private String name;
-    @Getter @Setter private String username;
-    @Getter @Setter private String email;
-    @Getter @Setter private Address address;
-    @Getter @Setter private String phone;
-    @Getter @Setter private String website;
-    @Getter @Setter private Company company;
+    private String id;
+    private String name;
+    private String username;
+    private String email;
+    private Address address;
+    private String phone;
+    private String website;
+    private Company company;
 
     @Override
     public String toString() {
@@ -25,7 +25,10 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(name, user.name) && Objects.equals(username, user.username) && Objects.equals(email, user.email) && Objects.equals(address, user.address) && Objects.equals(phone, user.phone) && Objects.equals(website, user.website) && Objects.equals(company, user.company);
+        return Objects.equals(id, user.id) && Objects.equals(name, user.name)
+                && Objects.equals(username, user.username) && Objects.equals(email, user.email)
+                && Objects.equals(address, user.address) && Objects.equals(phone, user.phone)
+                && Objects.equals(website, user.website) && Objects.equals(company, user.company);
     }
 
     @Override

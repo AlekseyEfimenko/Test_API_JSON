@@ -1,17 +1,18 @@
 package com.pojo.users;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import java.util.Objects;
 
+@Data
 public class Company {
-    @Getter @Setter private String name;
-    @Getter @Setter private String catchPhrase;
-    @Getter @Setter private String bs;
+    private String name;
+    private String catchPhrase;
+    private String bs;
 
     @Override
     public String toString() {
-        return String.format("%n\tname: %s%n\tcatchPhrase: %s%n\tbs: %s", name, catchPhrase, bs);
+        return String.format("%n\tname: %s%n\tcatchPhrase: %s%n\tbs: %s",
+                name, catchPhrase, bs);
     }
 
     @Override

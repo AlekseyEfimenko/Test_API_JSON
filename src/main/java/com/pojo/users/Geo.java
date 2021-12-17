@@ -1,16 +1,17 @@
 package com.pojo.users;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import java.util.Objects;
 
+@Data
 public class Geo{
-    @Getter @Setter private String lat;
-    @Getter @Setter private String lng;
+    private String lat;
+    private String lng;
 
     @Override
     public String toString() {
-        return String.format("%n\t\tlat: %s%n\t\tlng: %s", lat, lng);
+        return String.format("%n\t\tlat: %s%n\t\tlng: %s",
+                lat, lng);
     }
 
     @Override

@@ -18,7 +18,6 @@ public class TestSteps {
     private static final Logger LOGGER = Logger.getLogger(TestSteps.class);
 
     public void getPosts(String target) {
-        LOGGER.info("Get request from " + Configurations.getInstance().getRequestURL() + target);
         ApiUtils.getInstance().getRequest(target);
     }
 
@@ -54,7 +53,6 @@ public class TestSteps {
     }
 
     public void postPosts(String target, Post post) {
-        LOGGER.info("Post request to " + Configurations.getInstance().getRequestURL() + target);
         ApiUtils.getInstance().postRequest(target, post);
     }
 
